@@ -95,7 +95,9 @@ Gating is two-layered by design (see Error Handling): middleware is the fast UX-
 
 ## Testing
 
-Manual verification checklist only — no automated test suite for this chunk (low value for integration glue against a real external auth service; revisit with Playwright once more gated surface area exists, e.g. after chart/setlist gating is built).
+Manual verification checklist for everything that touches Supabase — low value to unit test integration glue against a real external auth service (a mocked test would just re-assert the mock, not catch real cookie/RLS bugs); revisit with Playwright once more gated surface area exists, e.g. after chart/setlist gating is built.
+
+**Exception:** the middleware's route-protection predicate (`isProtectedPath`) is pure logic with no external dependency and real edge cases (exact match vs. a path that merely starts with the same prefix) — it gets a unit test (Vitest). This is the only unit-tested code in this chunk.
 
 - [ ] Log in with correct credentials → lands on `/dashboard`, shows email + `admin` role
 - [ ] Log in with wrong password → inline error shown, stays on `/login`
