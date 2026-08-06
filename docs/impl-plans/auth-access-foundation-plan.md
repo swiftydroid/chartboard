@@ -16,7 +16,8 @@
 - Auth method: email + password only for this chunk — no OAuth, no magic link, no self-serve sign-up
 - Account creation: manual via Supabase dashboard — no sign-up UI is built in this chunk
 - Styling: Tailwind CSS + shadcn/ui only — no other component library
-- **No automated test suite for this chunk** (explicit decision in the approved design). Every task ends with a manual verification step instead of an automated test — do not add Jest/Playwright/etc. as part of this plan.
+- **No automated tests except for pure logic with no external dependency.** The only unit-tested code in this chunk is the middleware's route-protection predicate (Task 6) — a plain function with real edge cases and no Supabase/network dependency. Everything else (Supabase client wrappers, pages, Server Actions) is thin glue around the Supabase SDK, where a mocked unit test would just re-assert the mock rather than catch real bugs (cookie persistence, RLS enforcement) — those stay covered by the manual verification checklist only. Do not add Jest/Playwright/React Testing Library, and do not add tests to any task other than Task 6.
+- Test runner: Vitest (added in Task 6, the only task that needs one)
 - Env vars required throughout: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (service-role key is provisioned but unused until a future admin-tooling chunk)
 - Design reference: `docs/specs/auth-access-foundation-design.md`
 
@@ -33,6 +34,8 @@ chartboard/
 │   └── supabase/
 │       ├── client.ts                   # browser Supabase client
 │       ├── server.ts                   # server Supabase client (Server Components/Actions)
+│       ├── route-protection.ts         # pure route-matching predicate (unit tested)
+│       ├── route-protection.test.ts    # unit tests for route-protection.ts (colocated, Vitest convention)
 │       └── middleware.ts               # session refresh + route gating logic
 ├── supabase/
 │   └── migrations/
@@ -313,21 +316,87 @@ git commit -m "Add profiles table, RLS policies, and auto-provisioning trigger"
 ### Task 6: Middleware — session refresh and route gating
 
 **Files:**
+- Create: `lib/supabase/route-protection.ts`
+- Test: `lib/supabase/route-protection.test.ts`
 - Create: `lib/supabase/middleware.ts`
 - Create: `middleware.ts` (repo root)
+- Modify: `package.json` (add `vitest` devDependency and `test` script)
 
 **Interfaces:**
 - Consumes: `createServerClient` from `@supabase/ssr` (no dependency on Task 4's helpers — middleware needs its own request/response-bound cookie handling, this is intentional per the Supabase SSR pattern).
-- Produces: `updateSession(request: NextRequest): Promise<NextResponse>` from `lib/supabase/middleware.ts`, used by the root `middleware.ts`.
+- Produces:
+  - `isProtectedPath(pathname: string): boolean` from `lib/supabase/route-protection.ts` — pure function, no dependencies, the only unit-tested code in this chunk (see Global Constraints).
+  - `updateSession(request: NextRequest): Promise<NextResponse>` from `lib/supabase/middleware.ts`, used by the root `middleware.ts`.
 
-- [ ] **Step 1: Write the middleware session logic**
+- [ ] **Step 1: Install the test runner**
+
+Run: `npm install -D vitest`
+
+Add to `package.json`'s `"scripts"` block:
+```json
+"test": "vitest run"
+```
+
+- [ ] **Step 2: Write the failing test**
+
+Create `lib/supabase/route-protection.test.ts`:
+```ts
+import { describe, expect, it } from 'vitest'
+import { isProtectedPath } from './route-protection'
+
+describe('isProtectedPath', () => {
+  it('matches the exact protected path', () => {
+    expect(isProtectedPath('/dashboard')).toBe(true)
+  })
+
+  it('matches a nested path under a protected prefix', () => {
+    expect(isProtectedPath('/dashboard/settings')).toBe(true)
+  })
+
+  it('does not match an unrelated path that merely starts with the same letters', () => {
+    expect(isProtectedPath('/dashboard-old')).toBe(false)
+  })
+
+  it('does not match the login page', () => {
+    expect(isProtectedPath('/login')).toBe(false)
+  })
+
+  it('does not match the root path', () => {
+    expect(isProtectedPath('/')).toBe(false)
+  })
+})
+```
+
+- [ ] **Step 3: Run the test and verify it fails**
+
+Run: `npx vitest run lib/supabase/route-protection.test.ts`
+Expected: FAIL — `route-protection.ts` does not exist yet, so the import fails to resolve.
+
+- [ ] **Step 4: Write the minimal implementation**
+
+Create `lib/supabase/route-protection.ts`:
+```ts
+const PROTECTED_PREFIXES = ['/dashboard']
+
+export function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  )
+}
+```
+
+- [ ] **Step 5: Run the test and verify it passes**
+
+Run: `npx vitest run lib/supabase/route-protection.test.ts`
+Expected: PASS — all 5 cases green.
+
+- [ ] **Step 6: Write the middleware session logic, using the tested predicate**
 
 Create `lib/supabase/middleware.ts`:
 ```ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
-
-const PROTECTED_PREFIXES = ['/dashboard']
+import { isProtectedPath } from './route-protection'
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
@@ -357,11 +426,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isProtected = PROTECTED_PREFIXES.some((prefix) =>
-    request.nextUrl.pathname.startsWith(prefix)
-  )
-
-  if (isProtected && !user) {
+  if (isProtectedPath(request.nextUrl.pathname) && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -371,7 +436,7 @@ export async function updateSession(request: NextRequest) {
 }
 ```
 
-- [ ] **Step 2: Write the root middleware entrypoint**
+- [ ] **Step 7: Write the root middleware entrypoint**
 
 Create `middleware.ts` in the repo root:
 ```ts
@@ -389,16 +454,16 @@ export const config = {
 }
 ```
 
-- [ ] **Step 3: Verify it compiles and runs**
+- [ ] **Step 8: Manual verification — full dev server**
 
 Run: `npm run dev`, then visit `http://localhost:3000/dashboard` in a browser.
 Expected: redirected to `/login` (which doesn't exist as a page yet — a 404 on `/login` is fine and expected at this point; what matters is the URL bar shows `/login`, proving the redirect fired). Stop the server.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add lib/supabase/middleware.ts middleware.ts
-git commit -m "Add middleware for session refresh and route gating"
+git add lib/supabase/route-protection.ts lib/supabase/route-protection.test.ts lib/supabase/middleware.ts middleware.ts package.json package-lock.json
+git commit -m "Add middleware for session refresh and route gating, with unit-tested route matching"
 ```
 
 ---
