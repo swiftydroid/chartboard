@@ -22,4 +22,4 @@ Findings deferred during implementation review, not fixed before merge.
 
 ## 3. Process/tooling gaps
 
-- [ ] (none yet)
+- [x] Next.js 16 deprecated the `middleware.ts` file convention in favor of `proxy.ts` (function renamed `middleware` → `proxy`, same behavior/matcher config). The plan's file structure and Task 6/9/11 steps still reference `middleware.ts` by name — mentally substitute `proxy.ts`. Migrated during Task 6 (commit `4f6effb`); no outstanding action, just a naming mismatch between the plan doc and the actual repo going forward.
