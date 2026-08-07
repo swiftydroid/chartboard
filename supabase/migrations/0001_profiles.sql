@@ -7,6 +7,8 @@ create table public.profiles (
 
 alter table public.profiles enable row level security;
 
+grant select, update on public.profiles to authenticated;
+
 create policy "Users can view own profile"
   on public.profiles for select
   using (auth.uid() = id);
