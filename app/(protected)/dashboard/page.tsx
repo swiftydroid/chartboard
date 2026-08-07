@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { logout } from '../actions'
+import { Button } from '@/components/ui/button'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -13,9 +15,14 @@ export default async function DashboardPage() {
     .single()
 
   return (
-    <div className="p-8 space-y-2">
+    <div className="p-8 space-y-4">
       <p>Logged in as {user!.email}</p>
       <p>Role: {profile?.role ?? 'unknown'}</p>
+      <form action={logout}>
+        <Button type="submit" variant="outline">
+          Log out
+        </Button>
+      </form>
     </div>
   )
 }
