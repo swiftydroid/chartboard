@@ -64,3 +64,14 @@ Both are one-time settings applied by hand in the GitHub UI, tracked as explicit
 - After Dependabot config is added, confirm via repo Insights → Dependency graph → Dependabot that it's enabled and scheduled (first PRs may take up to a week to appear on schedule, don't block completion on waiting for one).
 - After CodeQL default setup is enabled, confirm the initial scan run appears and completes under Security → Code scanning.
 - After branch protection rules are added, confirm in Settings → Branches that both `development` and `master` show the rule with the `ci` check listed as required.
+
+## Follow-up (2026-08-12): Vercel Deployment Checks
+
+After the chunk above was merged, the repo was made **public** (to unlock free CodeQL default setup, which requires GitHub Advanced Security — paid on private repos, free on public). This also surfaced that Vercel's Preview deployments run independently of the `ci` GitHub Actions check — GitHub branch protection only gates the PR merge button, not Vercel's own build/deploy pipeline, which fires on every push regardless of `ci`'s status.
+
+Investigated two ways to gate Vercel on `ci` passing:
+
+1. **Vercel's native "Deployment Checks"** (Project Settings → Deployment Checks): reads GitHub Actions check results and withholds promoting a **Production** deployment to the custom production domain until selected checks pass. Zero code, zero added build-minute cost — the production build still happens immediately, only the domain alias is withheld.
+2. **Custom "Ignored Build Step" polling script**: the only way to gate a **Preview** deployment (no native equivalent exists for Preview — Vercel's Deployment Checks docs are explicit that it only applies to production promotion). Would require a maintained script polling the GitHub Checks API for up to N minutes before deciding build-vs-skip, at the cost of real build-minutes on every push.
+
+**Decision**: enabled Vercel's native Deployment Checks for **Production only**, requiring the `ci` check. **Preview deployments remain ungated** — deliberately out of scope, since gating them has no free/native option and Preview URLs aren't user-facing, so the build-minute cost of a polling script wasn't judged worth it for a solo-dev project. Configuration is a Vercel dashboard setting, not a file in this repo, so it isn't visible in git history — this note is the durable record. Verification is deferred to the actual first `development` → `master` promotion (tracked in `docs/specs/preLaunchChecklist.md`), since `master` was still at the initial scaffold commit at configuration time and forcing a promotion just to test the gate would have meant an unplanned first production launch.
