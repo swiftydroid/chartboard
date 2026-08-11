@@ -12,6 +12,7 @@ Manual config applied to UAT/dev that still needs to be replicated/verified in a
 - [ ] Create real admin account(s) in prod project and promote via the `profiles.role` SQL update (Task 10 pattern)
 - [ ] Point Cloudflare-managed prod domain at the prod Vercel deployment
 - [ ] Confirm JWT/session expiry settings match intended prod behavior (default 1hr access token — verify not left at a shortened debug value from Task 11 verification)
+- [ ] Verify Vercel's Deployment Checks setting (Project Settings → Deployment Checks, requiring the GitHub `ci` check) actually holds the first real `development` → `master` production promotion until `ci` passes. Configured 2026-08-12 (see `docs/specs/ci-cd-pipeline-design.md` for full context) but never yet exercised against a real production deployment, since `master` was still at the initial scaffold commit at configuration time — first real promotion IS the test.
 
 ## 2. Parked review findings
 
