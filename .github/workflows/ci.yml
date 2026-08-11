@@ -6,6 +6,9 @@ on:
   push:
     branches: [development, master]
 
+permissions:
+  contents: read
+
 jobs:
   ci:
     name: ci
