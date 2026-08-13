@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button'
 
 export default async function ChartsLibraryPage({
   searchParams,
@@ -19,9 +19,9 @@ export default async function ChartsLibraryPage({
     <div className="p-8 space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Charts</h1>
-        <Button asChild>
-          <Link href="/charts/new">New chart</Link>
-        </Button>
+        <Link href="/charts/new" className={buttonVariants()}>
+          New chart
+        </Link>
       </div>
 
       <form className="max-w-sm">
