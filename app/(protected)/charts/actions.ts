@@ -39,6 +39,7 @@ export async function createChart(values: ChartFormValues): Promise<void> {
     throw new Error('Failed to create chart')
   }
 
+  revalidatePath('/charts')
   redirect(`/charts/${data.id}`)
 }
 
@@ -68,6 +69,7 @@ export async function updateChart(chartId: string, values: ChartFormValues): Pro
     throw new Error('Failed to update chart')
   }
 
+  revalidatePath('/charts')
   redirect(`/charts/${chartId}`)
 }
 
