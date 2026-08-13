@@ -44,8 +44,12 @@ export async function createChart(values: ChartFormValues): Promise<void> {
 
 export async function updateChart(chartId: string, values: ChartFormValues): Promise<void> {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('charts')
     .update({
       title: values.title,
@@ -57,8 +61,10 @@ export async function updateChart(chartId: string, values: ChartFormValues): Pro
       content: toStoredContent(values.content),
     })
     .eq('id', chartId)
+    .select('id')
+    .single()
 
-  if (error) {
+  if (error || !data) {
     throw new Error('Failed to update chart')
   }
 
@@ -67,13 +73,19 @@ export async function updateChart(chartId: string, values: ChartFormValues): Pro
 
 export async function softDeleteChart(chartId: string): Promise<void> {
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('charts')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', chartId)
+    .select('id')
+    .single()
 
-  if (error) {
+  if (error || !data) {
     throw new Error('Failed to delete chart')
   }
 
