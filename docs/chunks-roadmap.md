@@ -8,7 +8,7 @@ Each chunk gets a design doc in `docs/specs/` and an implementation plan in `doc
 |---|-------|---------|--------|-------------|-----------|
 | 1 | Auth & Access Foundation | §6.4, §4 | ✅ Done | [auth-access-foundation-design.md](specs/auth-access-foundation-design.md) | [auth-access-foundation-plan.md](impl-plans/auth-access-foundation-plan.md) |
 | 2 | CI/CD Pipeline | §9 (infra) | ✅ Done | [ci-cd-pipeline-design.md](specs/ci-cd-pipeline-design.md) | [ci-cd-pipeline-plan.md](impl-plans/ci-cd-pipeline-plan.md) |
-| 3 | Chord Chart Management (core CRUD, ChordPro editor, paste-and-fix) | §6.1 | Design approved | [chord-chart-management-design.md](specs/chord-chart-management-design.md) | — |
+| 3 | Chord Chart Management (core CRUD, ChordPro editor, paste-and-fix) | §6.1 | ✅ Done | [chord-chart-management-design.md](specs/chord-chart-management-design.md) | [chord-chart-management-plan.md](impl-plans/chord-chart-management-plan.md) |
 | 4 | Transpose & Version History | §6.1 | Not started | — | — |
 | 5 | Annotations / private highlighting | §6.1 | Not started | — | — |
 | 6 | Setlists (build, reorder, remove, delete, share) | §6.2 | Not started | — | — |
