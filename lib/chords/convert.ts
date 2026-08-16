@@ -21,3 +21,7 @@ export function toChordsOverWords(song: Song): string {
 export function toDisplayHtml(song: Song): string {
   return new ChordSheetJS.HtmlDivFormatter().format(song)
 }
+
+export function toDisplayCss(scope: string): string {
+  return new ChordSheetJS.HtmlDivFormatter().cssString(scope)
+}

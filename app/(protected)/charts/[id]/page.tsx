@@ -1,7 +1,7 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
-import { parseChordPro, toDisplayHtml } from '@/lib/chords/convert'
+import { parseChordPro, toDisplayCss, toDisplayHtml } from '@/lib/chords/convert'
 import { canEditChart } from '@/lib/charts/permissions'
 import { buttonVariants } from '@/components/ui/button'
 import { DeleteChartButton } from '@/components/charts/delete-chart-button'
@@ -39,6 +39,7 @@ export default async function ChartPage({
 
   const song = parseChordPro(chart.content)
   const html = toDisplayHtml(song)
+  const css = toDisplayCss('.chord-sheet')
 
   return (
     <div className="p-8 space-y-4">
@@ -64,7 +65,8 @@ export default async function ChartPage({
           </div>
         )}
       </div>
-      <div dangerouslySetInnerHTML={{ __html: html }} />
+      <style dangerouslySetInnerHTML={{ __html: css }} />
+      <div className="chord-sheet" dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   )
 }

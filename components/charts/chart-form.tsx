@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type FormEvent } from 'react'
+import { unstable_rethrow } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -61,7 +62,8 @@ export function ChartForm({ initialValues, onSubmit, submitLabel }: ChartFormPro
         timeSignature: timeSignature || null,
         content,
       })
-    } catch {
+    } catch (err) {
+      unstable_rethrow(err)
       setError('Something went wrong saving the chart')
       setSubmitting(false)
     }
