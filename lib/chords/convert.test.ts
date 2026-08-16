@@ -58,4 +58,27 @@ describe('toDisplayHtml', () => {
     expect(html).not.toContain('<script')
     expect(html).not.toContain('alert(document.domain)')
   })
+
+  it('drops image directives so charts cannot trigger requests to attacker-chosen hosts', () => {
+    const song = parseChordPro('{image: https://attacker.com/track.png}\n[C]Amazing grace')
+    const html = toDisplayHtml(song)
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('attacker.com')
+  })
+
+  it('drops style attributes so charts cannot inject arbitrary CSS', () => {
+    const song = parseChordPro(
+      '{textfont: Arial;background-image:url(https://attacker.com/x.png)}\n[C]Amazing grace'
+    )
+    const html = toDisplayHtml(song)
+    expect(html).not.toContain('style=')
+    expect(html).not.toContain('attacker.com')
+  })
+
+  it('still renders title and subtitle directives as headings', () => {
+    const song = parseChordPro('{title: My Song}\n{subtitle: My Subtitle}\n[C]Amazing grace')
+    const html = toDisplayHtml(song)
+    expect(html).toContain('<h1 class="title">My Song</h1>')
+    expect(html).toContain('<h2 class="subtitle">My Subtitle</h2>')
+  })
 })

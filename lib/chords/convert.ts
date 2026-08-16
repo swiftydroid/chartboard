@@ -22,8 +22,8 @@ export function toChordsOverWords(song: Song): string {
 export function toDisplayHtml(song: Song): string {
   const rawHtml = new ChordSheetJS.HtmlDivFormatter().format(song)
   return DOMPurify.sanitize(rawHtml, {
-    ALLOWED_TAGS: ['div', 'h1', 'h2', 'h3', 'img'],
-    ALLOWED_ATTR: ['class', 'style', 'src', 'width', 'height'],
+    ALLOWED_TAGS: ['div', 'h1', 'h2', 'h3'],
+    ALLOWED_ATTR: ['class'],
   })
 }
 
