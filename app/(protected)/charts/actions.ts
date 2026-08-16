@@ -36,7 +36,6 @@ export async function createChart(values: ChartFormValues): Promise<void> {
     .single()
 
   if (error || !data) {
-    console.error('[DEBUG createChart] Supabase error:', JSON.stringify(error, null, 2))
     throw new Error('Failed to create chart')
   }
 
