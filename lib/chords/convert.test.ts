@@ -43,4 +43,19 @@ describe('toDisplayHtml', () => {
     expect(html).toContain('Amazing')
     expect(html).toContain('grace')
   })
+
+  it('sanitizes malicious markup embedded in chart content', () => {
+    const song = parseChordPro('[C]<svg/onload=alert(1)>Amazing grace')
+    const html = toDisplayHtml(song)
+    expect(html).not.toContain('onload')
+    expect(html).not.toContain('<svg')
+    expect(html).not.toContain('alert(1)')
+  })
+
+  it('strips script tags injected via chart content', () => {
+    const song = parseChordPro('[C]<script>alert(document.domain)</script>Amazing grace')
+    const html = toDisplayHtml(song)
+    expect(html).not.toContain('<script')
+    expect(html).not.toContain('alert(document.domain)')
+  })
 })

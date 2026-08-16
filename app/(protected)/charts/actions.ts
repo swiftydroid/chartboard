@@ -13,7 +13,23 @@ function toStoredContent(rawTextareaText: string): string {
   return annotateSectionLabels(chordPro)
 }
 
+function validateChartValues(values: ChartFormValues): void {
+  if (!values.title || !values.title.trim()) {
+    throw new Error('Title is required')
+  }
+  if (!values.key || typeof values.key !== 'string') {
+    throw new Error('Key is required')
+  }
+  if (!Array.isArray(values.artists)) {
+    values.artists = []
+  }
+  if (values.tempo !== null && !Number.isFinite(values.tempo)) {
+    throw new Error('Tempo must be a number')
+  }
+}
+
 export async function createChart(values: ChartFormValues): Promise<void> {
+  validateChartValues(values)
   const supabase = await createClient()
   const {
     data: { user },
@@ -44,6 +60,7 @@ export async function createChart(values: ChartFormValues): Promise<void> {
 }
 
 export async function updateChart(chartId: string, values: ChartFormValues): Promise<void> {
+  validateChartValues(values)
   const supabase = await createClient()
   const {
     data: { user },

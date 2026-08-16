@@ -19,12 +19,20 @@ export default async function EditChartPage({
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: chart } = await supabase
+  const { data: chart, error } = await supabase
     .from('charts')
     .select('*')
     .eq('id', id)
     .is('deleted_at', null)
     .single()
+
+  if (error && error.code !== 'PGRST116') {
+    return (
+      <div className="p-8">
+        <p className="text-sm text-red-600">Something went wrong loading this chart</p>
+      </div>
+    )
+  }
 
   if (!chart) notFound()
 

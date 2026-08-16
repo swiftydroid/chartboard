@@ -11,7 +11,7 @@ export default async function ChartsLibraryPage({
   const { q } = await searchParams
   const supabase = await createClient()
 
-  const { data: charts } = await supabase.rpc('search_charts', {
+  const { data: charts, error } = await supabase.rpc('search_charts', {
     search_term: q ?? '',
   })
 
@@ -27,6 +27,8 @@ export default async function ChartsLibraryPage({
       <form className="max-w-sm">
         <Input type="search" name="q" placeholder="Search by title or artist" defaultValue={q ?? ''} />
       </form>
+
+      {error && <p className="text-sm text-red-600">Something went wrong loading charts</p>}
 
       <ul className="divide-y">
         {(charts ?? []).map((chart: { id: string; title: string; artists: string[] | null; genre: string | null; key: string }) => (
