@@ -16,7 +16,7 @@ export function parseChordPro(text: string): Song {
 }
 
 export function toChordsOverWords(song: Song): string {
-  return new ChordSheetJS.ChordsOverWordsFormatter().format(song)
+  return new ChordSheetJS.ChordsOverWordsFormatter({ normalizeChords: false }).format(song)
 }
 
 export function toDisplayHtml(song: Song): string {
