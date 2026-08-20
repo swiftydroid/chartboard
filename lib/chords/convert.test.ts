@@ -34,6 +34,14 @@ describe('parseChordPro + toChordsOverWords round trip', () => {
     expect(backToWords).toMatch(/C/)
     expect(backToWords).toMatch(/G/)
   })
+
+  it('round-trips extended chords without normalizing the suffix', () => {
+    const chordProInput = '[Dadd11/F#]Some lyric'
+    const song = parseChordPro(chordProInput)
+    const backToWords = toChordsOverWords(song)
+    expect(backToWords).toContain('Dadd11/F#')
+    expect(backToWords).not.toContain('D(11)/F#')
+  })
 })
 
 describe('toDisplayHtml', () => {
