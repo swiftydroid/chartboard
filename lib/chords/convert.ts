@@ -20,7 +20,7 @@ export function toChordsOverWords(song: Song): string {
 }
 
 export function toDisplayHtml(song: Song): string {
-  const rawHtml = new ChordSheetJS.HtmlDivFormatter().format(song)
+  const rawHtml = new ChordSheetJS.HtmlDivFormatter({ normalizeChords: false }).format(song)
   return DOMPurify.sanitize(rawHtml, {
     ALLOWED_TAGS: ['div', 'h1', 'h2', 'h3'],
     ALLOWED_ATTR: ['class'],
