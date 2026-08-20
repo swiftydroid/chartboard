@@ -75,6 +75,13 @@ describe('toDisplayHtml', () => {
     expect(html).not.toContain('attacker.com')
   })
 
+  it('renders chords exactly as typed, without normalizing suffixes', () => {
+    const song = parseChordPro('[Dadd11/F#]Some lyric')
+    const html = toDisplayHtml(song)
+    expect(html).toContain('Dadd11/F#')
+    expect(html).not.toContain('D(11)/F#')
+  })
+
   it('still renders title and subtitle directives as headings', () => {
     const song = parseChordPro('{title: My Song}\n{subtitle: My Subtitle}\n[C]Amazing grace')
     const html = toDisplayHtml(song)
